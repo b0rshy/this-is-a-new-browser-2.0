@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Borshy</title>
+<title>Borshy Browser</title>
 <style>
 * { box-sizing: border-box; }
 body {
@@ -14,49 +14,58 @@ body {
   font-family: Arial, sans-serif;
 }
 header {
-  height: 65px;
+  height: 60px;
+  padding: 0 22px;
   display: flex;
   align-items: center;
-  padding: 0 25px;
-  border-bottom: 1px solid #242638;
+  justify-content: space-between;
+  background: #101321;
+  border-bottom: 1px solid #292d40;
+}
+.logo {
   color: #a18aff;
   font-size: 23px;
   font-weight: bold;
 }
-main {
-  max-width: 850px;
-  margin: 100px auto;
-  padding: 20px;
+.home {
   text-align: center;
+  padding: 30px 15px;
 }
-h1 { font-size: 58px; margin: 0; }
-.subtitle { color: #85899d; }
+h1 { font-size: 48px; margin: 12px 0; }
+.subtitle { color: #9296aa; }
 .toolbar {
   display: flex;
   gap: 8px;
-  margin: 30px auto 15px;
-  max-width: 700px;
-}
-.toolbar button, .search button {
-  background: #202337;
-  border: 1px solid #34384d;
-  color: white;
-  border-radius: 9px;
   padding: 12px;
+  background: #151827;
+  border-bottom: 1px solid #292d40;
+}
+button {
+  background: #252a3e;
+  color: white;
+  border: 1px solid #3a405a;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
 }
-.toolbar button:hover, .search button:hover {
-  background: #5141a5;
+button:hover { background: #5949a7; }
+.address {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #3a405a;
+  background: #090b12;
+  color: white;
 }
 .search {
   display: flex;
-  gap: 8px;
-  background: #171a28;
-  padding: 8px;
-  border: 1px solid #34384d;
-  border-radius: 13px;
-  max-width: 700px;
-  margin: auto;
+  max-width: 650px;
+  margin: 25px auto;
+  padding: 7px;
+  background: #171b2b;
+  border: 1px solid #343950;
+  border-radius: 12px;
 }
 .search input {
   flex: 1;
@@ -68,80 +77,156 @@ h1 { font-size: 58px; margin: 0; }
   color: white;
   font-size: 16px;
 }
-.search button {
-  background: #7964ed;
-  border: none;
-  padding: 12px 20px;
-}
+.search button { background: #7964ed; }
 .links {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
   gap: 12px;
-  margin-top: 35px;
+  flex-wrap: wrap;
+  margin: 20px;
 }
-.links a {
-  background: #171a28;
-  border: 1px solid #303348;
-  padding: 15px 20px;
-  border-radius: 10px;
-  color: white;
-  text-decoration: none;
+.links button { padding: 13px 20px; }
+#viewer {
+  width: 100%;
+  height: calc(100vh - 130px);
+  display: none;
+  border: none;
+  background: white;
 }
-.links a:hover { border-color: #907cff; }
 .note {
-  color: #74798e;
-  font-size: 12px;
-  margin-top: 35px;
+  color: #85899d;
+  font-size: 13px;
+  margin-top: 25px;
+}
+@media(max-width: 600px) {
+  .toolbar { flex-wrap: wrap; }
+  .address { flex-basis: 100%; order: 2; }
 }
 </style>
 </head>
 <body>
 
-<header>BORSHY</header>
+<header>
+  <div class="logo">BORSHY</div>
+  <button onclick="goHome()">⌂ Home</button>
+</header>
 
-<main>
+<div class="toolbar">
+  <button onclick="goBack()">←</button>
+  <button onclick="goForward()">→</button>
+  <button onclick="refreshPage()">↻</button>
+  <input class="address" id="address"
+    placeholder="Enter a website address...">
+  <button onclick="navigate()">Go</button>
+</div>
+
+<section class="home" id="home">
   <h1>Borshy.</h1>
   <p class="subtitle">A fresh way to explore the web.</p>
 
-  <div class="toolbar">
-    <button onclick="history.back()" title="Back">←</button>
-    <button onclick="history.forward()" title="Forward">→</button>
-    <button onclick="location.reload()" title="Refresh">↻</button>
-    <button onclick="location.href=location.pathname" title="Home">⌂</button>
-  </div>
-
   <form class="search" id="search">
-    <input id="address" placeholder="Search or enter a website..." autocomplete="off">
+    <input id="searchInput"
+      placeholder="Search or enter a website...">
     <button type="submit">Go</button>
   </form>
 
   <div class="links">
-    <a href="https://www.wikipedia.org">Wikipedia</a>
-    <a href="https://www.youtube.com">YouTube</a>
-    <a href="https://www.google.com">Google</a>
-    <a href="https://www.bing.com">Bing</a>
+    <button onclick="openSite('https://www.wikipedia.org')">Wikipedia</button>
+    <button onclick="openSite('https://www.youtube.com')">YouTube</button>
+    <button onclick="openSite('https://www.google.com')">Google</button>
+    <button onclick="openSite('https://www.bing.com')">Bing</button>
   </div>
 
-  <p class="note">Borshy Browser • Your web, your way.</p>
-</main>
+  <p class="note">Welcome to Borshy Browser.</p>
+</section>
+
+<iframe
+  id="viewer"
+  title="Website viewer"
+  referrerpolicy="strict-origin-when-cross-origin">
+</iframe>
 
 <script>
+let historyList = [];
+let historyIndex = -1;
+
+function getUrl(value) {
+  value = value.trim();
+  if (!value) return null;
+
+  if (/^https?:\/\//i.test(value)) return value;
+
+  if (value.includes(".") && !value.includes(" ")) {
+    return "https://" + value;
+  }
+
+  return "https://www.google.com/search?q=" +
+    encodeURIComponent(value);
+}
+
+function openSite(url) {
+  const frame = document.getElementById("viewer");
+  document.getElementById("home").style.display = "none";
+  frame.style.display = "block";
+  document.getElementById("address").value = url;
+
+  frame.src = url;
+  historyList = historyList.slice(0, historyIndex + 1);
+  historyList.push(url);
+  historyIndex++;
+}
+
+function navigate() {
+  const url = getUrl(document.getElementById("address").value);
+  if (url) openSite(url);
+}
+
+function goBack() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    loadHistory();
+  } else {
+    goHome();
+  }
+}
+
+function goForward() {
+  if (historyIndex < historyList.length - 1) {
+    historyIndex++;
+    loadHistory();
+  }
+}
+
+function loadHistory() {
+  const url = historyList[historyIndex];
+  document.getElementById("address").value = url;
+  document.getElementById("viewer").src = url;
+}
+
+function refreshPage() {
+  const frame = document.getElementById("viewer");
+  if (frame.style.display === "block") {
+    frame.src = frame.src;
+  } else {
+    location.reload();
+  }
+}
+
+function goHome() {
+  document.getElementById("viewer").style.display = "none";
+  document.getElementById("viewer").src = "about:blank";
+  document.getElementById("home").style.display = "block";
+  document.getElementById("address").value = "";
+}
+
 document.getElementById("search").addEventListener("submit", function(e) {
   e.preventDefault();
-  const value = document.getElementById("address").value.trim();
-  if (!value) return;
+  const url = getUrl(document.getElementById("searchInput").value);
+  if (url) openSite(url);
+});
 
-  let url;
-  if (/^https?:\/\//i.test(value)) {
-    url = value;
-  } else if (value.includes(".") && !value.includes(" ")) {
-    url = "https://" + value;
-  } else {
-    url = "https://www.google.com/search?q=" +
-      encodeURIComponent(value);
-  }
-  window.location.href = url;
+document.getElementById("address").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") navigate();
 });
 </script>
 
