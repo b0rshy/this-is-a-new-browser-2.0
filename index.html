@@ -4,84 +4,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Borshy Browser</title>
+<title>Borshy</title>
 <style>
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  background: #0b0d14;
+  background: #090b12;
   color: white;
   font-family: Arial, sans-serif;
 }
 header {
-  padding: 22px;
-  font-size: 25px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+  border-bottom: 1px solid #242638;
+  color: #a18aff;
+  font-size: 23px;
   font-weight: bold;
-  color: #9b8cff;
 }
-.home {
+main {
+  max-width: 850px;
+  margin: 100px auto;
+  padding: 20px;
   text-align: center;
-  padding: 100px 20px;
 }
-h1 { font-size: 55px; margin-bottom: 10px; }
-p { color: #9295a5; }
+h1 { font-size: 58px; margin: 0; }
+.subtitle { color: #85899d; }
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin: 30px auto 15px;
+  max-width: 700px;
+}
+.toolbar button, .search button {
+  background: #202337;
+  border: 1px solid #34384d;
+  color: white;
+  border-radius: 9px;
+  padding: 12px;
+  cursor: pointer;
+}
+.toolbar button:hover, .search button:hover {
+  background: #5141a5;
+}
 .search {
   display: flex;
-  max-width: 650px;
-  margin: 35px auto;
-  background: #1a1d29;
-  border: 1px solid #34384b;
-  border-radius: 14px;
+  gap: 8px;
+  background: #171a28;
   padding: 8px;
+  border: 1px solid #34384d;
+  border-radius: 13px;
+  max-width: 700px;
+  margin: auto;
 }
-input {
+.search input {
   flex: 1;
   min-width: 0;
+  padding: 12px;
   background: transparent;
   border: none;
   outline: none;
   color: white;
-  padding: 14px;
   font-size: 16px;
 }
-button {
-  background: #7965ed;
-  color: white;
+.search button {
+  background: #7964ed;
   border: none;
-  border-radius: 9px;
   padding: 12px 20px;
-  cursor: pointer;
 }
-#notice {
-  color: #9295a5;
-  font-size: 13px;
+.links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 35px;
+}
+.links a {
+  background: #171a28;
+  border: 1px solid #303348;
+  padding: 15px 20px;
+  border-radius: 10px;
+  color: white;
+  text-decoration: none;
+}
+.links a:hover { border-color: #907cff; }
+.note {
+  color: #74798e;
+  font-size: 12px;
+  margin-top: 35px;
 }
 </style>
 </head>
 <body>
+
 <header>BORSHY</header>
 
-<main class="home">
+<main>
   <h1>Borshy.</h1>
-  <p>Your web, your way.</p>
+  <p class="subtitle">A fresh way to explore the web.</p>
+
+  <div class="toolbar">
+    <button onclick="history.back()" title="Back">←</button>
+    <button onclick="history.forward()" title="Forward">→</button>
+    <button onclick="location.reload()" title="Refresh">↻</button>
+    <button onclick="location.href=location.pathname" title="Home">⌂</button>
+  </div>
 
   <form class="search" id="search">
     <input id="address" placeholder="Search or enter a website..." autocomplete="off">
     <button type="submit">Go</button>
   </form>
 
-  <div id="notice"></div>
+  <div class="links">
+    <a href="https://www.wikipedia.org">Wikipedia</a>
+    <a href="https://www.youtube.com">YouTube</a>
+    <a href="https://www.google.com">Google</a>
+    <a href="https://www.bing.com">Bing</a>
+  </div>
+
+  <p class="note">Borshy Browser • Your web, your way.</p>
 </main>
 
 <script>
 document.getElementById("search").addEventListener("submit", function(e) {
   e.preventDefault();
-
-  let value = document.getElementById("address").value.trim();
+  const value = document.getElementById("address").value.trim();
   if (!value) return;
 
   let url;
-
   if (/^https?:\/\//i.test(value)) {
     url = value;
   } else if (value.includes(".") && !value.includes(" ")) {
@@ -90,9 +141,9 @@ document.getElementById("search").addEventListener("submit", function(e) {
     url = "https://www.google.com/search?q=" +
       encodeURIComponent(value);
   }
-
   window.location.href = url;
 });
 </script>
+
 </body>
 </html>
