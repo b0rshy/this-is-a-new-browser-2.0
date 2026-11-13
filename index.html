@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Borshy Browser</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #0b0d14;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 22px;
+  font-size: 25px;
+  font-weight: bold;
+  color: #9b8cff;
+}
+.home {
+  text-align: center;
+  padding: 100px 20px;
+}
+h1 { font-size: 55px; margin-bottom: 10px; }
+p { color: #9295a5; }
+.search {
+  display: flex;
+  max-width: 650px;
+  margin: 35px auto;
+  background: #1a1d29;
+  border: 1px solid #34384b;
+  border-radius: 14px;
+  padding: 8px;
+}
+input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px;
+  font-size: 16px;
+}
+button {
+  background: #7965ed;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+#notice {
+  color: #9295a5;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+<header>BORSHY</header>
+
+<main class="home">
+  <h1>Borshy.</h1>
+  <p>Your web, your way.</p>
+
+  <form class="search" id="search">
+    <input id="address" placeholder="Search or enter a website..." autocomplete="off">
+    <button type="submit">Go</button>
+  </form>
+
+  <div id="notice"></div>
+</main>
+
+<script>
+document.getElementById("search").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  let value = document.getElementById("address").value.trim();
+  if (!value) return;
+
+  let url;
+
+  if (/^https?:\/\//i.test(value)) {
+    url = value;
+  } else if (value.includes(".") && !value.includes(" ")) {
+    url = "https://" + value;
+  } else {
+    url = "https://www.google.com/search?q=" +
+      encodeURIComponent(value);
+  }
+
+  window.location.href = url;
+});
+</script>
+</body>
+</html>
