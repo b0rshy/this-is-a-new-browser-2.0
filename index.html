@@ -142,12 +142,32 @@ h1 { font-size: 48px; margin: 12px 0; }
   background: white;
 }
 
-#searchPage {
+#searchPage, #gamesPage {
   display: none;
-  max-width: 850px;
+  max-width: 950px;
   margin: 25px auto;
   padding: 15px;
 }
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.game-card {
+  padding: 18px;
+  background: #171b2b;
+  border: 1px solid #343950;
+  border-radius: 10px;
+}
+
+.game-card h3 { margin: 0 0 8px; color: #a18aff; }
+.game-card p { color: #b9bdcc; min-height: 42px; line-height: 1.4; }
+.game-card button { width: 100%; }
+
+#googleSearch { min-height: 300px; }
 
 .result {
   padding: 16px;
@@ -181,7 +201,10 @@ h1 { font-size: 48px; margin: 12px 0; }
 
 <header>
   <div class="logo">BORSHY</div>
-  <button onclick="goHome()">⌂ Home</button>
+  <div style="display:flex; gap:8px;">
+    <button onclick="goHome()">⌂ Home</button>
+    <button onclick="goGames()">🎮 Games</button>
+  </div>
 </header>
 
 <div class="tabs" id="tabs"></div>
@@ -208,12 +231,9 @@ h1 { font-size: 48px; margin: 12px 0; }
   </form>
 
   <div class="links">
-    <button onclick="openSite('https://www.wikipedia.org')">
-      Wikipedia
-    </button>
-    <button onclick="openSite('https://www.youtube.com')">
-      YouTube
-    </button>
+    <button onclick="openSite('https://www.wikipedia.org')">Wikipedia</button>
+    <button onclick="openSite('https://www.youtube.com')">YouTube</button>
+    <button onclick="goGames()">🎮 Browse Games</button>
   </div>
 
   <p class="note">Welcome to Borshy Browser.</p>
@@ -221,7 +241,38 @@ h1 { font-size: 48px; margin: 12px 0; }
 
 <section id="searchPage">
   <h2 id="searchHeading">Search results</h2>
-  <div id="results"></div>
+  <div id="googleSearch">
+    <div class="gcse-searchresults-only"></div>
+  </div>
+  <p class="note">Search results are provided by Google Programmable Search.</p>
+</section>
+
+<section id="gamesPage">
+  <h2>🎮 Borshy Games</h2>
+  <p class="subtitle">Choose a game to try inside Borshy.</p>
+  <div class="game-grid">
+    <div class="game-card">
+      <h3>CrazyGames</h3><p>Browse a huge collection of free browser games.</p>
+      <button onclick="openSite('https://www.crazygames.com/')">Open game site</button>
+    </div>
+    <div class="game-card">
+      <h3>Coolmath Games</h3><p>Puzzles, strategy games, and arcade challenges.</p>
+      <button onclick="openSite('https://www.coolmathgames.com/')">Open game site</button>
+    </div>
+    <div class="game-card">
+      <h3>2048</h3><p>Combine numbered tiles to reach 2048.</p>
+      <button onclick="openSite('https://play2048.co/')">Play 2048</button>
+    </div>
+    <div class="game-card">
+      <h3>Tetris</h3><p>Fit falling blocks together and clear lines.</p>
+      <button onclick="openSite('https://tetris.com/play-tetris')">Play Tetris</button>
+    </div>
+    <div class="game-card">
+      <h3>Slither.io</h3><p>Grow your snake in this multiplayer game.</p>
+      <button onclick="openSite('https://slither.io/')">Play Slither.io</button>
+    </div>
+  </div>
+  <p class="note">Some game websites block being displayed inside another website. If one does, Borshy cannot force it to load inside its viewer.</p>
 </section>
 
 <iframe
@@ -230,6 +281,20 @@ h1 { font-size: 48px; margin: 12px 0; }
   allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
   allowfullscreen>
 </iframe>
+
+<script>
+window.__gcse = {
+  callback: function() {
+    window.borshyCseReady = true;
+    if (window.borshyPendingQuery) {
+      const pending = window.borshyPendingQuery;
+      window.borshyPendingQuery = "";
+      runGoogleSearch(pending);
+    }
+  }
+};
+</script>
+<script async src="https://cse.google.com/cse.js?cx=f609ebb67578842f6"></script>
 
 <script>
 let tabs = [];
@@ -275,6 +340,7 @@ function renderTabs() {
     name.textContent =
       p.type === "home" ? "New Tab" :
       p.type === "search" ? p.query :
+      p.type === "games" ? "Games" :
       new URL(p.url).hostname;
 
     const close = document.createElement("button");
@@ -353,86 +419,42 @@ function openSite(url) {
   pushPage({type: "site", url});
 }
 
-async function searchFor(query) {
+function runGoogleSearch(query) {
+  if (!window.borshyCseReady ||
+      !window.google ||
+      !google.search ||
+      !google.search.cse ||
+      !google.search.cse.element) {
+    window.borshyPendingQuery = query;
+    return;
+  }
+
+  const searchElement =
+    google.search.cse.element.getElement("searchresults-only");
+
+  if (searchElement) {
+    searchElement.execute(query);
+  } else {
+    window.borshyPendingQuery = query;
+  }
+}
+
+function searchFor(query) {
   query = query.trim();
   if (!query) return;
 
   const p = {
     type: "search",
     query,
-    results: null,
-    loading: true
+    loading: false
   };
 
   pushPage(p);
-
-  try {
-    const api =
-      "https://en.wikipedia.org/w/api.php" +
-      "?action=query&list=search&srsearch=" +
-      encodeURIComponent(query) +
-      "&format=json&origin=*&srlimit=10";
-
-    const response = await fetch(api);
-
-    if (!response.ok) throw new Error("Search failed");
-
-    const data = await response.json();
-
-    p.results = data.query.search;
-    p.loading = false;
-
-    if (page() === p) render();
-  } catch (error) {
-    p.loading = false;
-    p.error = "Search couldn't load. Please try again.";
-    if (page() === p) render();
-  }
+  runGoogleSearch(query);
 }
 
 function showResults(p) {
-  const results = document.getElementById("results");
-  results.innerHTML = "";
-
-  if (p.loading) {
-    results.textContent = "Searching...";
-    return;
-  }
-
-  if (p.error) {
-    results.textContent = p.error;
-    return;
-  }
-
-  if (!p.results || !p.results.length) {
-    results.textContent = "No results found. Try another search.";
-    return;
-  }
-
-  p.results.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "result";
-
-    const link = document.createElement("a");
-    link.href = "#";
-    link.textContent = item.title;
-
-    link.onclick = event => {
-      event.preventDefault();
-      openSite(
-        "https://en.wikipedia.org/wiki/" +
-        encodeURIComponent(item.title.replace(/ /g, "_"))
-      );
-    };
-
-    const description = document.createElement("p");
-    description.textContent =
-      item.snippet.replace(/<[^>]*>/g, "");
-
-    card.appendChild(link);
-    card.appendChild(description);
-    results.appendChild(card);
-  });
+  // Google Programmable Search renders results in the embedded element.
 }
 
 function navigate() {
@@ -470,17 +492,23 @@ function goHome() {
   pushPage({type: "home"});
 }
 
+function goGames() {
+  pushPage({type: "games"});
+}
+
 function render() {
   renderTabs();
 
   const p = page();
   const home = document.getElementById("home");
   const searchPage = document.getElementById("searchPage");
+  const gamesPage = document.getElementById("gamesPage");
   const frame = document.getElementById("viewer");
   const address = document.getElementById("address");
 
   home.style.display = "none";
   searchPage.style.display = "none";
+  gamesPage.style.display = "none";
   frame.style.display = "none";
 
   if (p.type === "home") {
@@ -493,7 +521,11 @@ function render() {
     address.value = p.query;
     document.getElementById("searchHeading").textContent =
       "Results for: " + p.query;
-    showResults(p);
+  }
+
+  if (p.type === "games") {
+    gamesPage.style.display = "block";
+    address.value = "Borshy Games";
   }
 
   if (p.type === "site") {
