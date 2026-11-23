@@ -455,6 +455,22 @@ function searchFor(query) {
   runGoogleSearch(query);
 }
 
+// Catch Google result clicks before Google can open a separate browser tab.
+document.addEventListener("click", function(event) {
+  const link = event.target.closest("#googleSearch a");
+  if (!link) return;
+
+  const destination = link.href;
+  if (!destination || !/^https?:\/\//i.test(destination)) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === "function") {
+    event.stopImmediatePropagation();
+  }
+  openSite(destination);
+}, true);
+
 function showResults(p) {
   // Google Programmable Search renders results in the embedded element.
 }
