@@ -242,7 +242,7 @@ h1 { font-size: 48px; margin: 12px 0; }
 <section id="searchPage">
   <h2 id="searchHeading">Search results</h2>
   <div id="googleSearch">
-    <div class="gcse-searchresults-only"></div>
+    <div class="gcse-searchresults-only" data-gname="borshyresults"></div>
   </div>
   <p class="note">Search results are provided by Google Programmable Search.</p>
 </section>
@@ -283,18 +283,20 @@ h1 { font-size: 48px; margin: 12px 0; }
 </iframe>
 
 <script>
-window.__gcse = {
-  callback: function() {
-    window.borshyCseReady = true;
-    if (window.borshyPendingQuery) {
-      const pending = window.borshyPendingQuery;
-      window.borshyPendingQuery = "";
-      runGoogleSearch(pending);
-    }
+window.borshyCseReady = false;
+window.borshyPendingQuery = "";
+window.borshyGoogleLoaded = function() {
+  window.borshyCseReady = true;
+  if (window.borshyPendingQuery) {
+    const pending = window.borshyPendingQuery;
+    window.borshyPendingQuery = "";
+    setTimeout(function() { runGoogleSearch(pending); }, 0);
   }
 };
 </script>
-<script async src="https://cse.google.com/cse.js?cx=f609ebb67578842f6"></script>
+<script async
+  src="https://cse.google.com/cse.js?cx=f609ebb67578842f6"
+  onload="borshyGoogleLoaded()"></script>
 
 <script>
 let tabs = [];
@@ -430,7 +432,7 @@ function runGoogleSearch(query) {
   }
 
   const searchElement =
-    google.search.cse.element.getElement("searchresults-only");
+    google.search.cse.element.getElement("borshyresults");
 
   if (searchElement) {
     searchElement.execute(query);
